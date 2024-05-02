@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
-import { HelloGateway } from './hello.gateway';
+import { LogServiceModule } from 'app/core/providers/log/log.module';
+import { HelloController } from 'app/modules/hello/hello.controller';
 
 @Module({
-    providers: [HelloGateway],
-    exports: [HelloGateway]
+  imports: [LogServiceModule],
+  controllers: [HelloController],
 })
-export class WebSocketModule {}
+export class HelloModule {}

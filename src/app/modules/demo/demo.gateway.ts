@@ -1,8 +1,12 @@
-import { WebSocketGateway, WebSocketServer, SubscribeMessage, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
+import { OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import * as dotenv from 'dotenv';
 import { Server } from 'socket.io';
 
-@WebSocketGateway({ cors: true })
-export class HelloGateway implements OnGatewayConnection, OnGatewayDisconnect {
+// Load .env file
+dotenv.config();
+
+@WebSocketGateway({ namespace: process.env.SERVER_CONTEXT, cors: true })
+export class DemoGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @WebSocketServer() server: Server;
 
     handleConnection(client: any) {
