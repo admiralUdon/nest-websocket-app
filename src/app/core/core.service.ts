@@ -26,7 +26,7 @@ export class CoreService implements OnApplicationBootstrap {
     // -----------------------------------------------------------------------------------------------------
 
     private async ensureStorage() {
-        const folderPath = resolve("./src/storage/downloads");
+        const folderPath = resolve("./src/storage/logs");
         if (!existsSync(folderPath)) {
             await ensureDir(folderPath);
         }
