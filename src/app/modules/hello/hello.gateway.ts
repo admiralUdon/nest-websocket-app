@@ -2,7 +2,7 @@ import { Logger } from '@nestjs/common';
 import { CronExpression } from '@nestjs/schedule';
 import { WebSocket } from 'ws';
 
-export class DemoGateway  {
+export class HelloGateway  {
 
     /**
      * Constructor
@@ -15,16 +15,16 @@ export class DemoGateway  {
     // -----------------------------------------------------------------------------------------------------
 
     private sendMessage(webSocket: WebSocket)
-    {
-        const datetimeString = new Date().toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).replace(',', '');
-        webSocket.send(datetimeString);
-        Logger.debug(`Send message: ${datetimeString}`, "DemoGateway");
+    {        
+        const message = "Hello";
+        webSocket.send(message);
+        Logger.debug(`Send message: ${message}`, "HelloGateway");
 
     }
 
     private receiveMessage(message)
     {
-        Logger.debug(`Received message: ${message}`, "DemoGateway");
+        Logger.debug(`Received message: ${message}`, "HelloGateway");
     }
 
     // -----------------------------------------------------------------------------------------------------
@@ -33,7 +33,7 @@ export class DemoGateway  {
 
     protected handler(webSocket: WebSocket): void
     {
-        Logger.debug(`Client connected to ${process.env.SERVER_CONTEXT}/general-status`, "DemoGateway");
+        Logger.debug(`Client connected to ${process.env.SERVER_CONTEXT}/general-status`, "HelloGateway");
 
         // Handle client messages
         webSocket.on('message', (message) => {
@@ -42,12 +42,12 @@ export class DemoGateway  {
     
         // Handle connection close
         webSocket.on('close', () => {
-            Logger.debug(`Client disconnected from ${process.env.SERVER_CONTEXT}/general-status`, "DemoGateway");
+            Logger.debug(`Client disconnected from ${process.env.SERVER_CONTEXT}/general-status`, "HelloGateway");
         });
     
         // Handle WebSocket errors
         webSocket.on('error', (error: Error) => {
-            Logger.error(`WebSocket error: ${error.message}`, "DemoGateway");
+            Logger.error(`WebSocket error: ${error.message}`, "HelloGateway");
         });
     }
 
