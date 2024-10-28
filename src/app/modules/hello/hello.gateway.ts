@@ -4,6 +4,8 @@ import { WebSocket } from 'ws';
 
 export class HelloGateway  {
 
+    protected _webSocket: WebSocket;
+
     /**
      * Constructor
      */
@@ -14,22 +16,29 @@ export class HelloGateway  {
     // @ Private methods
     // -----------------------------------------------------------------------------------------------------
 
-    private sendMessage(webSocket: WebSocket)
-    {        
-        const message = "Hello";
-        webSocket.send(message);
-        Logger.debug(`Send message: ${message}`, "HelloGateway");
-
+    private sendMessage(message: string)
+    {
+        if (this._webSocket) {
+            this._webSocket.send(message);
+            Logger.debug(`Send message: ${message}`, "DemoGateway");
+        }
     }
 
     private receiveMessage(message)
     {
         Logger.debug(`Received message: ${message}`, "HelloGateway");
+        this.sendMessage(`${message}`);
     }
 
     // -----------------------------------------------------------------------------------------------------
     // @ Protected methods
     // -----------------------------------------------------------------------------------------------------
+
+    protected initialise(webSocket: WebSocket)
+    {
+        this._webSocket = webSocket;
+        this.handler(webSocket);
+    }
 
     protected handler(webSocket: WebSocket): void
     {
@@ -51,17 +60,4 @@ export class HelloGateway  {
         });
     }
 
-    protected broadcast() : { cronExpression: CronExpression, cronFunction: (webSocket: WebSocket) => void  }
-    {
-        const cronExpression: CronExpression = CronExpression.EVERY_SECOND;
-        return {
-            cronExpression,
-            cronFunction: (webSocket: WebSocket): (() => void) => {
-                return () => {
-                    // Example to broadcast message
-                    this.sendMessage(webSocket)
-                }
-            }
-        }
-    }
 }

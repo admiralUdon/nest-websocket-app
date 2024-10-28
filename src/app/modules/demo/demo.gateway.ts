@@ -1,35 +1,79 @@
 import { Logger } from '@nestjs/common';
-import { CronExpression } from '@nestjs/schedule';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { DemoService } from 'app/core/services/demo/demo.service';
 import { WebSocket } from 'ws';
 
 export class DemoGateway  {
 
+    protected _webSocket: WebSocket;
+
     /**
      * Constructor
      */
-    constructor()
+    constructor(
+        private _demoService: DemoService // this does not works, yet.
+    )
     {}
 
     // -----------------------------------------------------------------------------------------------------
     // @ Private methods
     // -----------------------------------------------------------------------------------------------------
 
-    private sendMessage(webSocket: WebSocket)
+    private sendMessage(message: string)
     {
-        const datetimeString = new Date().toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).replace(',', '');
-        webSocket.send(datetimeString);
-        Logger.debug(`Send message: ${datetimeString}`, "DemoGateway");
-
+        if (this._webSocket) {
+            this._webSocket.send(message);
+            Logger.debug(`Send message: ${message}`, "DemoGateway");
+        }
     }
 
     private receiveMessage(message)
     {
+        const timestamp = this.getTimestamp();
         Logger.debug(`Received message: ${message}`, "DemoGateway");
+
+        const response = `${timestamp} :- ${message}`;
+        this._demoService.demo = {
+            timestamp,
+            message: response,
+            client: null
+        }
+        this.sendMessage(JSON.stringify(response));
+    }
+
+    private getTimestamp() 
+    {
+        const datetimeString = new Date().toLocaleString('en-GB', { 
+            day: '2-digit', 
+            month: '2-digit', 
+            year: 'numeric', 
+            hour: '2-digit', 
+            minute: '2-digit', 
+            second: '2-digit', 
+            hour12: false 
+        }).replace(',', '');
+
+        return datetimeString;
+    }
+
+    @Cron(CronExpression.EVERY_5_MINUTES)
+    private blastMessage()
+    {
+        if (this._webSocket) {
+            const datetimeString = new Date().toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).replace(',', '');
+            this._webSocket.send(datetimeString);
+        }
     }
 
     // -----------------------------------------------------------------------------------------------------
     // @ Protected methods
     // -----------------------------------------------------------------------------------------------------
+
+    protected initialise(webSocket: WebSocket)
+    {
+        this._webSocket = webSocket;
+        this.handler(webSocket);
+    }
 
     protected handler(webSocket: WebSocket): void
     {
@@ -49,19 +93,5 @@ export class DemoGateway  {
         webSocket.on('error', (error: Error) => {
             Logger.error(`WebSocket error: ${error.message}`, "DemoGateway");
         });
-    }
-
-    protected broadcast() : { cronExpression: CronExpression, cronFunction: (webSocket: WebSocket) => void  }
-    {
-        const cronExpression: CronExpression = CronExpression.EVERY_SECOND;
-        return {
-            cronExpression,
-            cronFunction: (webSocket: WebSocket): (() => void) => {
-                return () => {
-                    // Example to broadcast message
-                    this.sendMessage(webSocket)
-                }
-            }
-        }
     }
 }

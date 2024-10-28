@@ -21,7 +21,6 @@ export const appRoutes: Routes = [
         children: [
             { path: 'demo', module: DemoGateway },
             { path: 'hello', module: HelloGateway },
-
         ]
     }
 ]

@@ -16,7 +16,7 @@ import { HelloModule } from 'app/modules/hello/hello.module';
         ScheduleModule.forRoot(),
         ConfigModule.forRoot({expandVariables: true}),
         ThrottlerModule.forRoot(throttlerConfig),
-        WebSocketServiceModule,
+        WebSocketServiceModule.forRoot(),
         // Custom modules
         HelloModule,
         DemoModule, // See demo module for websocket demo
