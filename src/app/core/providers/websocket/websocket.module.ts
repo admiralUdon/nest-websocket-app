@@ -5,6 +5,7 @@ import { gatewayRoutes } from 'app/gateways/gateway.routes';
 @Module({})
 export class WebSocketModule implements OnModuleInit {
 
+    private routes: Map<string, { gatewayClass: any; module: any }> = new Map();
     private readonly logger = new Logger(WebSocketModule.name);
 
     /**
@@ -22,12 +23,16 @@ export class WebSocketModule implements OnModuleInit {
     async onModuleInit() {
         
         // Set up the HTTP server for handling WebSocket upgrades
-        // const server: Server = this.moduleRef.get(Server, { strict: false });
-        const server = this._httpAdapterHost.httpAdapter.getHttpServer()
+        const server = this._httpAdapterHost.httpAdapter.getHttpServer();
+
+        // Find the WebSocket routes from app routes
+        const wsRoutes = gatewayRoutes.find((route) => route.path === "ws");
+        const SERVER_CONTEXT = process.env.SERVER_CONTEXT ?? "";
+        this.routes = this.getGatewayRoutes(wsRoutes.children, `${SERVER_CONTEXT}/ws`)        
 
         server.on('upgrade', async (request, socket, head) => {
-            try {
-                const route = this.findRoute(request.url);                
+            try {                
+                const route = this.routes.get(request.url)              
                 if (route) {
                     const module = await this.moduleRef.resolve(route.gatewayClass);                    
                     if (module && typeof module.handleUpgrade === 'function') {
@@ -51,14 +56,22 @@ export class WebSocketModule implements OnModuleInit {
     // @ Private methods
     // -----------------------------------------------------------------------------------------------------
 
-    private findRoute(url: string) {
-        // Parse the URL to find the matching route
-        const [basePath, childPath] = url.replace(/^\/|\/$/g, '').split('/');
-
-        const baseRoute = gatewayRoutes.find(route => route.path === basePath);
-        if (!baseRoute || !baseRoute.children) return null;
-
-        return baseRoute.children.find(route => route.path === childPath);
+    /**
+     * Retrieve route paths from the application's routing configuration.
+     * @param routes - The routes to process
+     * @param parentPath - The parent path to prepend
+     * @returns A map of WebSocket paths and their associated events
+     */
+    private getGatewayRoutes(routes: any, basePath: string): Map<string, { gatewayClass: any; module: any }> {
+        return routes.flatMap(route => {
+            const { module, gatewayClass } = route;
+            const fullPath = `/${basePath}/${route.path}`.replace('//', '/');
+            const currentEntry = (module && gatewayClass) ? [[fullPath, { module, gatewayClass }]] : [];            
+            
+            return route.children 
+                ? [...currentEntry, ...this.getGatewayRoutes(route.children, fullPath)] 
+                : currentEntry;
+        }).reduce((map, [path, module]: [string, { gatewayClass: any; module: any }]) => map.set(path, module), new Map());
     }
 
     // -----------------------------------------------------------------------------------------------------
