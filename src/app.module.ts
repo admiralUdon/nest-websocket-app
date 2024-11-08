@@ -6,8 +6,9 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { appRoutes } from 'app.routes';
 import { throttlerConfig } from 'app/config/throttler.config';
 import { CoreService } from 'app/core/core.service';
-import { WebSocketServiceModule } from 'app/core/providers/websocket/websocket.module';
-import { DemoModule } from 'app/modules/demo/demo.module';
+import { WebSocketModule } from 'app/core/providers/websocket/websocket.module';
+import { DemoGatewayModule } from 'app/gateways/demo/demo.module';
+import { HelloGatewayModule } from 'app/gateways/hello/hello.module';
 import { HelloModule } from 'app/modules/hello/hello.module';
 
 @Module({
@@ -16,10 +17,11 @@ import { HelloModule } from 'app/modules/hello/hello.module';
         ScheduleModule.forRoot(),
         ConfigModule.forRoot({expandVariables: true}),
         ThrottlerModule.forRoot(throttlerConfig),
-        WebSocketServiceModule.forRoot(),
+        WebSocketModule.forRoot(),
         // Custom modules
         HelloModule,
-        DemoModule, // See demo module for websocket demo
+        DemoGatewayModule, // See demo module for websocket demo
+        HelloGatewayModule,
         // Router modules
         RouterModule.register(appRoutes)
     ],

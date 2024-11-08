@@ -1,4 +1,4 @@
-import { Controller, Get, HttpStatus, Query, Request, Response } from '@nestjs/common';
+import { Controller, Get, Query, Request, Response } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { LogService } from 'app/core/providers/log/log.service';
 import { AppCode } from 'app/core/types/app.type';
@@ -11,7 +11,6 @@ export class HelloController {
     /**
      * Constructor
      */
-
     constructor(
         private _logService: LogService
     ){

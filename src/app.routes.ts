@@ -1,6 +1,4 @@
 import { Routes } from "@nestjs/core";
-import { DemoGateway } from "app/modules/demo/demo.gateway";
-import { HelloGateway } from "app/modules/hello/hello.gateway";
 import { HelloModule } from "app/modules/hello/hello.module";
 
 /**
@@ -14,13 +12,6 @@ export const appRoutes: Routes = [
         path: 'api',
         children: [
             { path: 'hello', module: HelloModule },
-        ]
-    },
-    {
-        path: 'ws',
-        children: [
-            { path: 'demo', module: DemoGateway },
-            { path: 'hello', module: HelloGateway },
         ]
     }
 ]
